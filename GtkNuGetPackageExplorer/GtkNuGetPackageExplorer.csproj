@@ -31,13 +31,6 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Web.XmlTransform">
-      <HintPath>..\packages\Microsoft.Web.Xdt.1.0.0\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Core, Version=2.7.40808.167, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NuGet.Core.2.7.0\lib\net40-Client\NuGet.Core.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="gtk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
@@ -58,6 +51,10 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
+    <Reference Include="System.Core" />
+    <Reference Include="NuGet.Core">
+      <HintPath>..\lib\NuGet.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -70,9 +67,8 @@
     <Compile Include="gtk-gui\MainWindow.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <Compile Include="TextBufferExtension.cs" />
+    <Compile Include="DirectoryTreeBuilder.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
