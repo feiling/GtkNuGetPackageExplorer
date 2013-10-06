@@ -34,13 +34,7 @@ public partial class MainWindow: Gtk.Window
         tag = new TextTag("italic") { Style = Pango.Style.Italic };
         textBuffer.TagTable.Add(tag);
 
-        tag = new TextTag("link") { 
-            Underline =  Pango.Underline.Single,
-            Foreground = "blue"
-        };
-        textBuffer.TagTable.Add(tag);
-
-        // init tree view
+		// init tree view
         treeview1.HeadersVisible = false;
         treeview1.AppendColumn("", new CellRendererText(), "text", 0);
     }
@@ -112,8 +106,14 @@ public partial class MainWindow: Gtk.Window
 
         if (_package.LicenseUrl != null)
         {
-            textBuffer.AddWithTag("link", "View License Terms\n");
-            // TODO: figure out how to add link
+            textBuffer.AddWithTag("bold", "License Url: ");
+            textBuffer.Add("{0}\n", _package.LicenseUrl);
+        }
+
+        if (_package.ProjectUrl != null)
+        {
+            textBuffer.AddWithTag("bold", "Project Url: ");
+            textBuffer.Add("{0}\n", _package.ProjectUrl);
         }
 
         if (!string.IsNullOrEmpty(_package.Summary))
@@ -171,8 +171,10 @@ public partial class MainWindow: Gtk.Window
         }
         else
         {
-            iter = store.InsertWithValues(parent, 0, n.Name, n.Name);
+			iter = store.AppendNode(parent);
+			store.SetValues(iter, n.Name, n.Name);
         }
+
         foreach (var c in n.Children)
         {
             AddTreeNode(store, iter, c);

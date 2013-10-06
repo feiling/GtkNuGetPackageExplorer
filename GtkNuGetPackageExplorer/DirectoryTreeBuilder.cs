@@ -14,20 +14,33 @@ namespace GtkNuGetPackageExplorer
         }
 
         public TreeNode Create(IPackage package)
-        {
-            _nodes = new Dictionary<string, TreeNode>();
-            foreach (var file in package.GetFiles())
-            {
-                var parent = GetParentNode(file.Path);
-                parent.Children.Add(new TreeNode(file.Path));
-            }
+		{
+			_nodes = new Dictionary<string, TreeNode>();
+			foreach (var file in package.GetFiles())
+			{
+				var parent = GetParentNode(file.Path);
+				parent.Children.Add(new TreeNode(file.Path));
+			}
 
-            var root = _nodes[""];
+			var root = _nodes [""];
 
-            // TODO: sort children
+			// sort children of each node
+			var q = new Queue<TreeNode>();
+			q.Enqueue(root);
+			while (!q.IsEmpty())
+			{
+				var n = q.Peek();
+				q.Dequeue();
 
-            return root;
-        }        
+				n.SortChildren();
+				foreach (var c in n.Children)
+				{
+					q.Enqueue(c);
+				}
+			}
+
+			return root;
+		}       
 
         private TreeNode GetParentNode(string path)
         {
