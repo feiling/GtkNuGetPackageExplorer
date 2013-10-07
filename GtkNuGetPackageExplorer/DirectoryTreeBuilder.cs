@@ -19,7 +19,9 @@ namespace GtkNuGetPackageExplorer
 			foreach (var file in package.GetFiles())
 			{
 				var parent = GetParentNode(file.Path);
-				parent.Children.Add(new TreeNode(file.Path));
+
+                var leafNode = new LeafTreeNode(System.IO.Path.GetFileName(file.Path), file.Path);
+                parent.Children.Add(leafNode);
 			}
 
 			var root = _nodes [""];
@@ -44,28 +46,31 @@ namespace GtkNuGetPackageExplorer
 
         private TreeNode GetParentNode(string path)
         {
-            var d = System.IO.Path.GetDirectoryName(path);
+            // the key of the node is the directory part of the path
+            var nodeKey = System.IO.Path.GetDirectoryName(path);           
+            var nodeName = System.IO.Path.GetFileName(nodeKey);
+
             TreeNode n;
-            if (_nodes.TryGetValue(d, out n))
+            if (_nodes.TryGetValue(nodeKey, out n))
             {
                 return n;
             }
             else
             {
-                // Create new node
-                if (d == "")
+                // Create the parent node
+                if (nodeKey == "")
                 {
                     // create root
                     n = new TreeNode("");
                 }
                 else
                 {
-                    TreeNode parent = GetParentNode(d);
-                    n = new TreeNode(d);
+                    TreeNode parent = GetParentNode(nodeKey);
+                    n = new TreeNode(nodeName);
                     parent.Children.Add(n);
                 }
 
-                _nodes[d] = n;
+                _nodes[nodeKey] = n;
                 return n;
             }
         }
@@ -84,6 +89,12 @@ namespace GtkNuGetPackageExplorer
             _children = new List<TreeNode>();
         }
 
+        public virtual string FilePath 
+        { 
+            get { return null; } 
+            set {} 
+        }
+
         public void SortChildren()
         {
             _children.Sort((a, b) => { 
@@ -98,6 +109,16 @@ namespace GtkNuGetPackageExplorer
 
                 return string.Compare(a.Name, b.Name);
             });
+        }
+    }
+
+    public class LeafTreeNode : TreeNode
+    {
+        public override string FilePath { get; set; }
+
+        public LeafTreeNode(string name, string filePath) : base(name)
+        {
+            FilePath = filePath;
         }
     }
 }

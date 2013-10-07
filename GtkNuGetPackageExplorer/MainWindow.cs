@@ -5,16 +5,39 @@ using System.Text;
 using GtkNuGetPackageExplorer;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 
 public partial class MainWindow: Gtk.Window
 {	
     IPackage _package;
+    Mono.TextEditor.TextEditor _textEditor;
+    TextView _fileInfoView;
+
+    TreeViewManager _treeViewManager;
 
 	public MainWindow (): base (Gtk.WindowType.Toplevel)
 	{
-		Build ();
+        Build ();
 
-		this.OpenAction.Activated += (object sender, EventArgs e) => OpenFile();
+        _treeViewManager = new TreeViewManager(treeview1);
+        _treeViewManager.FileSelected += HandleFileSelected;
+
+        _textEditor = new Mono.TextEditor.TextEditor();
+        _fileInfoView = new TextView()
+        {
+            Visible = true,
+            Editable = false,
+        };
+        var scrolledWindow = new ScrolledWindow()
+        {
+            Visible = true,
+            ShadowType = ShadowType.EtchedIn
+        };
+        scrolledWindow.Add(_fileInfoView);
+        _rightPane.Add2(scrolledWindow);
+
+        this.OpenAction.Activated += (object sender, EventArgs e) => OpenFile();
         InitViews();
 	}
 
@@ -34,9 +57,7 @@ public partial class MainWindow: Gtk.Window
         tag = new TextTag("italic") { Style = Pango.Style.Italic };
         textBuffer.TagTable.Add(tag);
 
-		// init tree view
-        treeview1.HeadersVisible = false;
-        treeview1.AppendColumn("", new CellRendererText(), "text", 0);
+        _fileInfoView.WrapMode = WrapMode.Word;
     }
 
 	private void OpenFile()
@@ -52,7 +73,7 @@ public partial class MainWindow: Gtk.Window
             _package = new OptimizedZipPackage(fc.Filename);
             fc.Destroy();
             UpdateMetadataView();
-            UpdateTreeView();
+            _treeViewManager.Package = _package;
         }
         else
         {
@@ -148,36 +169,53 @@ public partial class MainWindow: Gtk.Window
         }
     }
 
-    private void UpdateTreeView()
+    void HandleFileSelected(object sender, FileSelectedEventArgs e)
     {
-        var builder = new DirectoryTreeBuilder();
-        var root = builder.Create(_package);       
-
-        var store = new TreeStore(typeof(string), typeof(string));
-        foreach (var c in root.Children)
+        if (e.FilePath == null)
         {
-            AddTreeNode(store, TreeIter.Zero, c);
+            _fileInfoView.Buffer.Clear();
         }
 
-        treeview1.Model = store;
-    }
-
-    private void AddTreeNode(TreeStore store, TreeIter parent, GtkNuGetPackageExplorer.TreeNode n)
-    {
-        TreeIter iter;
-        if (parent.Equals(TreeIter.Zero))
+        if (string.Equals(System.IO.Path.GetExtension(e.FilePath), ".dll", StringComparison.OrdinalIgnoreCase))
         {
-            iter = store.AppendValues(n.Name, n.Name);
+            var packageFile = _package.GetFiles().FirstOrDefault(f => f.Path == e.FilePath);
+            byte[] rawAssembly;
+            using (var stream = packageFile.GetStream())
+            {
+                rawAssembly = stream.ReadAllBytes();
+            }
+
+            AppDomain temp = AppDomain.CreateDomain("temp_for_loading_metadata");
+            try
+            {
+                AssemblyLoader al = (AssemblyLoader)temp.CreateInstanceAndUnwrap(
+                    typeof(AssemblyLoader).Assembly.FullName,
+                    typeof(AssemblyLoader).FullName);
+                var s = al.GetMetadata(rawAssembly);
+                var b = _fileInfoView.Buffer;
+                b.Clear();
+                b.Add(s); 
+            }
+            finally
+            {
+                AppDomain.Unload(temp);
+            }
         }
         else
         {
-			iter = store.AppendNode(parent);
-			store.SetValues(iter, n.Name, n.Name);
+            _fileInfoView.Buffer.Clear();
         }
+    }
 
-        foreach (var c in n.Children)
+    public class AssemblyLoader : MarshalByRefObject
+    {
+        public string GetMetadata(byte[] rawAssembly)
         {
-            AddTreeNode(store, iter, c);
+            var assembly = Assembly.ReflectionOnlyLoad(rawAssembly);
+            var sb = new StringBuilder();
+            sb.AppendFormat("Full Name: {0}\n", assembly.FullName);
+
+            return sb.ToString();
         }
     }
 }
