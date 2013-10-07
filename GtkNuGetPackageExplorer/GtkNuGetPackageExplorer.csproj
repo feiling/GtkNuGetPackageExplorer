@@ -58,6 +58,9 @@
     <Reference Include="Mono.TextEditor">
       <HintPath>..\lib\Mono.TextEditor.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.NRefactory">
+      <HintPath>..\lib\ICSharpCode.NRefactory.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">

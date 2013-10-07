@@ -15,6 +15,7 @@ public partial class MainWindow: Gtk.Window
     TextView _fileInfoView;
 
     TreeViewManager _treeViewManager;
+    ScrolledWindow _fileDetail;
 
 	public MainWindow (): base (Gtk.WindowType.Toplevel)
 	{
@@ -24,18 +25,23 @@ public partial class MainWindow: Gtk.Window
         _treeViewManager.FileSelected += HandleFileSelected;
 
         _textEditor = new Mono.TextEditor.TextEditor();
+        _textEditor.Document.ReadOnly = true;
+        _textEditor.Options.EnableSyntaxHighlighting = true;
+        _textEditor.Document.MimeType = "text/c-sharp";
+        // !!! _textEditor.Text = "void main() { return \"abc\";} ";
+
         _fileInfoView = new TextView()
         {
             Visible = true,
             Editable = false,
         };
-        var scrolledWindow = new ScrolledWindow()
+        _fileDetail = new ScrolledWindow()
         {
             Visible = true,
             ShadowType = ShadowType.EtchedIn
         };
-        scrolledWindow.Add(_fileInfoView);
-        _rightPane.Add2(scrolledWindow);
+        _fileDetail.Add(_fileInfoView);
+        _rightPane.Add2(_fileDetail);
 
         this.OpenAction.Activated += (object sender, EventArgs e) => OpenFile();
         InitViews();
@@ -171,39 +177,63 @@ public partial class MainWindow: Gtk.Window
 
     void HandleFileSelected(object sender, FileSelectedEventArgs e)
     {
+        _fileInfoView.Buffer.Clear();
+        _textEditor.Text = "";
+
         if (e.FilePath == null)
         {
-            _fileInfoView.Buffer.Clear();
+            return;
         }
 
+        var packageFile = _package.GetFiles().FirstOrDefault(f => f.Path == e.FilePath);
         if (string.Equals(System.IO.Path.GetExtension(e.FilePath), ".dll", StringComparison.OrdinalIgnoreCase))
         {
-            var packageFile = _package.GetFiles().FirstOrDefault(f => f.Path == e.FilePath);
-            byte[] rawAssembly;
-            using (var stream = packageFile.GetStream())
-            {
-                rawAssembly = stream.ReadAllBytes();
-            }
-
-            AppDomain temp = AppDomain.CreateDomain("temp_for_loading_metadata");
-            try
-            {
-                AssemblyLoader al = (AssemblyLoader)temp.CreateInstanceAndUnwrap(
-                    typeof(AssemblyLoader).Assembly.FullName,
-                    typeof(AssemblyLoader).FullName);
-                var s = al.GetMetadata(rawAssembly);
-                var b = _fileInfoView.Buffer;
-                b.Clear();
-                b.Add(s); 
-            }
-            finally
-            {
-                AppDomain.Unload(temp);
-            }
+            ShowDllFileInfo(packageFile);
         }
         else
         {
-            _fileInfoView.Buffer.Clear();
+            using (TextReader r = new StreamReader(packageFile.GetStream()))
+            {
+                var fileContent = r.ReadToEnd();
+                _textEditor.Text = fileContent;
+            }
+
+            if (_fileDetail.Child != _textEditor)
+            {
+                _fileDetail.Remove(_fileInfoView);
+                _fileDetail.Add(_textEditor);
+            }
+        }
+    }
+
+    void ShowDllFileInfo(IPackageFile packageFile)
+    {
+        byte[] rawAssembly;
+        using (var stream = packageFile.GetStream())
+        {
+            rawAssembly = stream.ReadAllBytes();
+        }
+
+        AppDomain temp = AppDomain.CreateDomain("temp_for_loading_metadata");
+        try
+        {
+            AssemblyLoader al = (AssemblyLoader)temp.CreateInstanceAndUnwrap(
+                typeof(AssemblyLoader).Assembly.FullName,
+                typeof(AssemblyLoader).FullName);
+            var s = al.GetMetadata(rawAssembly);
+            var b = _fileInfoView.Buffer;
+            b.Clear();
+            b.Add(s);
+
+            if (_fileDetail.Child != _fileInfoView)
+            {
+                _fileDetail.Remove(_textEditor);
+                _fileDetail.Add(_fileInfoView);
+            }
+        }
+        finally
+        {
+            AppDomain.Unload(temp);
         }
     }
 
