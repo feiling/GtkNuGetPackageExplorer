@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 public partial class MainWindow: Gtk.Window
 {	
@@ -21,12 +22,15 @@ public partial class MainWindow: Gtk.Window
 	{
         Build ();
 
+        DragDropSetup();
+
         _treeViewManager = new TreeViewManager(treeview1);
         _treeViewManager.FileSelected += HandleFileSelected;
 
         _textEditor = new Mono.TextEditor.TextEditor();
         _textEditor.Document.ReadOnly = true;
         _textEditor.Options.EnableSyntaxHighlighting = true;
+        _textEditor.Options.ShowIconMargin = false;
         _textEditor.Document.MimeType = "text/c-sharp";
         // !!! _textEditor.Text = "void main() { return \"abc\";} ";
 
@@ -47,6 +51,40 @@ public partial class MainWindow: Gtk.Window
         InitViews();
 	}
 
+    private void DragDropSetup()
+    {
+        var targetEntries = new TargetEntry[]
+        {
+            new TargetEntry("text/uri-list", 0, 0)
+        };
+        Drag.DestSet(
+            this,
+            DestDefaults.All,
+            targetEntries,
+            Gdk.DragAction.Copy);
+        this.DragDataReceived += HandleDragDataReceived;
+    }
+
+    void HandleDragDataReceived (object o, DragDataReceivedArgs args)
+    {
+        byte[] data = args.SelectionData.Data;
+        string s = System.Text.Encoding.UTF8.GetString(data);
+        string[] fileList = Regex.Split(s, "\r\n");
+        string fileName = fileList[0];
+        Uri uri;
+        if (!Uri.TryCreate(fileName, UriKind.Absolute, out uri))
+        {
+            return;
+        }
+
+        if (!uri.IsFile)
+        {
+            return;
+        }
+
+        OpenPackageFile(uri.LocalPath);
+    }
+
 	protected void OnDeleteEvent(object sender, DeleteEventArgs a)
 	{
 		Application.Quit();
@@ -66,6 +104,13 @@ public partial class MainWindow: Gtk.Window
         _fileInfoView.WrapMode = WrapMode.Word;
     }
 
+    private void OpenPackageFile(string fileName)
+    {
+        _package = new OptimizedZipPackage(fileName);
+        UpdateMetadataView();
+        _treeViewManager.Package = _package;
+    }
+
 	private void OpenFile()
 	{
 		FileChooserDialog fc = new FileChooserDialog(
@@ -76,10 +121,9 @@ public partial class MainWindow: Gtk.Window
 			"OK", ResponseType.Ok);
         if (fc.Run() == (int)ResponseType.Ok)
         {
-            _package = new OptimizedZipPackage(fc.Filename);
+            var fileName = fc.Filename;
             fc.Destroy();
-            UpdateMetadataView();
-            _treeViewManager.Package = _package;
+            OpenPackageFile(fileName);
         }
         else
         {
