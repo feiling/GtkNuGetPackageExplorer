@@ -76,6 +76,8 @@
     <Compile Include="TextBufferExtension.cs" />
     <Compile Include="DirectoryTreeBuilder.cs" />
     <Compile Include="TreeViewManager.cs" />
+    <Compile Include="FileContentEditor.cs" />
+    <Compile Include="gtk-gui\GtkNuGetPackageExplorer.FileContentEditor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -12,11 +12,12 @@ using System.Text.RegularExpressions;
 public partial class MainWindow: Gtk.Window
 {	
     IPackage _package;
-    Mono.TextEditor.TextEditor _textEditor;
     TextView _fileInfoView;
 
     TreeViewManager _treeViewManager;
     ScrolledWindow _fileDetail;
+
+    FileContentEditor _fileContentEditor;
 
 	public MainWindow (): base (Gtk.WindowType.Toplevel)
 	{
@@ -24,15 +25,11 @@ public partial class MainWindow: Gtk.Window
 
         DragDropSetup();
 
+        _fileContentEditor = new FileContentEditor();
+        _fileContentEditor.Visible = true;
+
         _treeViewManager = new TreeViewManager(treeview1);
         _treeViewManager.FileSelected += HandleFileSelected;
-
-        _textEditor = new Mono.TextEditor.TextEditor();
-        _textEditor.Document.ReadOnly = true;
-        _textEditor.Options.EnableSyntaxHighlighting = true;
-        _textEditor.Options.ShowIconMargin = false;
-        _textEditor.Document.MimeType = "text/c-sharp";
-        // !!! _textEditor.Text = "void main() { return \"abc\";} ";
 
         _fileInfoView = new TextView()
         {
@@ -222,7 +219,7 @@ public partial class MainWindow: Gtk.Window
     void HandleFileSelected(object sender, FileSelectedEventArgs e)
     {
         _fileInfoView.Buffer.Clear();
-        _textEditor.Text = "";
+        _fileContentEditor.Text = "";
 
         if (e.FilePath == null)
         {
@@ -239,13 +236,13 @@ public partial class MainWindow: Gtk.Window
             using (TextReader r = new StreamReader(packageFile.GetStream()))
             {
                 var fileContent = r.ReadToEnd();
-                _textEditor.Text = fileContent;
+                _fileContentEditor.Text = fileContent;
             }
 
-            if (_fileDetail.Child != _textEditor)
+            if (_fileDetail.Child != _fileContentEditor)
             {
                 _fileDetail.Remove(_fileInfoView);
-                _fileDetail.Add(_textEditor);
+                _fileDetail.Add(_fileContentEditor);
             }
         }
     }
@@ -271,7 +268,7 @@ public partial class MainWindow: Gtk.Window
 
             if (_fileDetail.Child != _fileInfoView)
             {
-                _fileDetail.Remove(_textEditor);
+                _fileDetail.Remove(_fileContentEditor);
                 _fileDetail.Add(_fileInfoView);
             }
         }
