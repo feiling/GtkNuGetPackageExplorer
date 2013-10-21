@@ -49,7 +49,7 @@ public partial class MainWindow
 		this.hpaned1 = new global::Gtk.HPaned ();
 		this.hpaned1.CanFocus = true;
 		this.hpaned1.Name = "hpaned1";
-		this.hpaned1.Position = 1;
+		this.hpaned1.Position = 157;
 		// Container child hpaned1.Gtk.Paned+PanedChild
 		this.GtkScrolledWindow1 = new global::Gtk.ScrolledWindow ();
 		this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
@@ -70,7 +70,7 @@ public partial class MainWindow
 		this._rightPane = new global::Gtk.VPaned ();
 		this._rightPane.CanFocus = true;
 		this._rightPane.Name = "_rightPane";
-		this._rightPane.Position = 1;
+		this._rightPane.Position = 133;
 		// Container child _rightPane.Gtk.Paned+PanedChild
 		this.GtkScrolledWindow = new global::Gtk.ScrolledWindow ();
 		this.GtkScrolledWindow.Name = "GtkScrolledWindow";

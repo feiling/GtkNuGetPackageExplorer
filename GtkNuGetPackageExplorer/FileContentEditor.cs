@@ -56,7 +56,16 @@ namespace GtkNuGetPackageExplorer
 
             var type = (string)_fileTypeCombobox.Model.GetValue(iter, 0);
             var mimeType = _fileTypes[type];
+        }
+
+        void SetMimeType(string mimeType)
+        {
             _textEditor.Document.MimeType = mimeType;
+
+            // Change document text to force syntax highlighting update
+            var text = _textEditor.Document.Text;
+            _textEditor.Document.Text = "";
+            _textEditor.Document.Text = text;
         }
     }
 }
