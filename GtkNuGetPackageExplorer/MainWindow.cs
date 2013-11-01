@@ -101,7 +101,7 @@ public partial class MainWindow: Gtk.Window
         _fileInfoView.WrapMode = WrapMode.Word;
     }
 
-    private void OpenPackageFile(string fileName)
+    public void OpenPackageFile(string fileName)
     {
         try
         {

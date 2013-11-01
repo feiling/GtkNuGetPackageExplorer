@@ -10,6 +10,11 @@ namespace GtkNuGetPackageExplorer
 			Application.Init ();
 			MainWindow win = new MainWindow ();
 			win.Show ();
+            if (args.Length > 0)
+            {
+                win.OpenPackageFile(args[0]);
+            }
+
 			Application.Run ();
 		}
 	}
