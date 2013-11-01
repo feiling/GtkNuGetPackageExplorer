@@ -8,7 +8,7 @@ namespace GtkNuGetPackageExplorer
 		private global::Gtk.VBox vbox1;
 		private global::Gtk.HBox hbox1;
 		private global::Gtk.ComboBox _fileTypeCombobox;
-		private global::Gtk.ScrolledWindow scrolledwindow1;
+		private global::Gtk.ScrolledWindow GtkScrolledWindow;
 		private global::Mono.TextEditor.TextEditor _textEditor;
 
 		protected virtual void Build ()
@@ -42,11 +42,10 @@ namespace GtkNuGetPackageExplorer
 			w4.Expand = false;
 			w4.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.scrolledwindow1 = new global::Gtk.ScrolledWindow ();
-			this.scrolledwindow1.CanFocus = true;
-			this.scrolledwindow1.Name = "scrolledwindow1";
-			this.scrolledwindow1.ShadowType = ((global::Gtk.ShadowType)(1));
-			// Container child scrolledwindow1.Gtk.Container+ContainerChild
+			this.GtkScrolledWindow = new global::Gtk.ScrolledWindow ();
+			this.GtkScrolledWindow.Name = "GtkScrolledWindow";
+			this.GtkScrolledWindow.ShadowType = ((global::Gtk.ShadowType)(1));
+			// Container child GtkScrolledWindow.Gtk.Container+ContainerChild
 			global::Gtk.Viewport w5 = new global::Gtk.Viewport ();
 			w5.ShadowType = ((global::Gtk.ShadowType)(0));
 			// Container child GtkViewport.Gtk.Container+ContainerChild
@@ -59,9 +58,9 @@ namespace GtkNuGetPackageExplorer
 			this._textEditor.IsCaseSensitive = false;
 			this._textEditor.IsWholeWordOnly = false;
 			w5.Add (this._textEditor);
-			this.scrolledwindow1.Add (w5);
-			this.vbox1.Add (this.scrolledwindow1);
-			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.scrolledwindow1]));
+			this.GtkScrolledWindow.Add (w5);
+			this.vbox1.Add (this.GtkScrolledWindow);
+			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.GtkScrolledWindow]));
 			w8.Position = 1;
 			this.Add (this.vbox1);
 			if ((this.Child != null)) {

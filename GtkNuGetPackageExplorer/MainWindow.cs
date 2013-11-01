@@ -103,9 +103,27 @@ public partial class MainWindow: Gtk.Window
 
     private void OpenPackageFile(string fileName)
     {
-        _package = new OptimizedZipPackage(fileName);
-        UpdateMetadataView();
-        _treeViewManager.Package = _package;
+        try
+        {
+            _package = new OptimizedZipPackage(fileName);
+            UpdateMetadataView();
+            _treeViewManager.Package = _package;
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = String.Format(
+                "Error while openning file {0}: {1} ", 
+                fileName, 
+                ex.Message);
+            var m = new MessageDialog(
+                this, 
+                DialogFlags.DestroyWithParent, 
+                MessageType.Error, 
+                ButtonsType.Ok,
+                errorMessage);
+            m.Run();
+            m.Destroy();
+        }
     }
 
 	private void OpenFile()
@@ -236,6 +254,7 @@ public partial class MainWindow: Gtk.Window
             using (TextReader r = new StreamReader(packageFile.GetStream()))
             {
                 var fileContent = r.ReadToEnd();
+                _fileContentEditor.SetFileType(System.IO.Path.GetExtension(e.FilePath));
                 _fileContentEditor.Text = fileContent;
             }
 
