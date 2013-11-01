@@ -163,6 +163,9 @@ public partial class MainWindow: Gtk.Window
             textBuffer.Add("{0}\n", _package.Title);
         }
 
+        textBuffer.AddWithTag("bold", "Development Dependency: ");
+        textBuffer.Add("{0}\n", _package.DevelopmentDependency);
+
         if (!_package.Authors.IsEmpty())
         {
             textBuffer.AddWithTag("bold", "Authors: ");
