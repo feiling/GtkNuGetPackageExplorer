@@ -62,23 +62,15 @@
     <Reference Include="ICSharpCode.NRefactory">
       <HintPath>..\lib\ICSharpCode.NRefactory.dll</HintPath>
     </Reference>
-  </ItemGroup>
+  </ItemGroup>  
   <ItemGroup>
-    <EmbeddedResource Include="gtk-gui\gui.stetic">
-      <LogicalName>gui.stetic</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="gtk-gui\generated.cs" />
     <Compile Include="MainWindow.cs" />
-    <Compile Include="gtk-gui\MainWindow.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TextBufferExtension.cs" />
     <Compile Include="DirectoryTreeBuilder.cs" />
     <Compile Include="TreeViewManager.cs" />
     <Compile Include="FileContentEditor.cs" />
-    <Compile Include="gtk-gui\GtkNuGetPackageExplorer.FileContentEditor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

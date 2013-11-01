@@ -11,6 +11,16 @@ using System.Text.RegularExpressions;
 
 public partial class MainWindow: Gtk.Window
 {	
+    private global::Gtk.Action FileAction;
+	private global::Gtk.Action OpenAction;
+	// private global::Gtk.MenuBar menubar2;
+	private global::Gtk.ScrolledWindow GtkScrolledWindow1;
+	private global::Gtk.TextView _metaDataView;
+	private global::Gtk.VPaned _rightPane;
+	private global::Gtk.ScrolledWindow GtkScrolledWindow;
+	private global::Gtk.TreeView treeview1;
+	
+	
     IPackage _package;
     TextView _fileInfoView;
 
@@ -26,8 +36,6 @@ public partial class MainWindow: Gtk.Window
         DragDropSetup();
 
         _fileContentEditor = new FileContentEditor();
-        _fileContentEditor.Visible = true;
-
         _treeViewManager = new TreeViewManager(treeview1);
         _treeViewManager.FileSelected += HandleFileSelected;
 
@@ -42,12 +50,109 @@ public partial class MainWindow: Gtk.Window
             ShadowType = ShadowType.EtchedIn
         };
         _fileDetail.Add(_fileInfoView);
-        _rightPane.Add2(_fileDetail);
+		_rightPane.Add2(_fileDetail);
 
         this.OpenAction.Activated += (object sender, EventArgs e) => OpenFile();
         InitViews();
 	}
 
+    protected virtual void Build()
+    {
+        // create menu
+        var openMenuItem = new MenuItem("Open");
+        openMenuItem.Activated += (o, e) => OpenFile();
+
+        var fileMenu = new Menu();
+        fileMenu.Append(openMenuItem);
+
+        var fileMenuItem = new MenuItem("File");
+        fileMenuItem.Submenu = fileMenu;
+
+        var menuBar = new MenuBar();
+        menuBar.Append(fileMenuItem);        
+        
+        // Widget MainWindow
+        global::Gtk.ActionGroup w1 = new global::Gtk.ActionGroup("Default");
+        this.FileAction = new global::Gtk.Action("FileAction", global::Mono.Unix.Catalog.GetString("File"), null, null);
+        this.FileAction.ShortLabel = global::Mono.Unix.Catalog.GetString("File");
+        w1.Add(this.FileAction, null);
+        this.OpenAction = new global::Gtk.Action("OpenAction", global::Mono.Unix.Catalog.GetString("Open"), null, null);
+        this.OpenAction.ShortLabel = global::Mono.Unix.Catalog.GetString("Open");
+        w1.Add(this.OpenAction, null);
+        this.Name = "MainWindow";
+        this.Title = global::Mono.Unix.Catalog.GetString("MainWindow");
+        this.WindowPosition = ((global::Gtk.WindowPosition)(4));
+
+
+
+        /*
+        // Container child vbox1.Gtk.Box+BoxChild
+        this.UIManager.AddUiFromString ("<ui><menubar name=\'menubar2\'><menu name=\'FileAction\' action=\'FileAction\'><menuite" +
+            "m name=\'OpenAction\' action=\'OpenAction\'/></menu></menubar></ui>");
+        this.menubar2 = ((global::Gtk.MenuBar)(this.UIManager.GetWidget ("/menubar2")));
+        this.menubar2.Name = "menubar2"; 
+        this.vbox1.Add (this.menubar2); 
+        global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.menubar2]));
+        w2.Position = 0;
+        w2.Expand = false;
+        w2.Fill = false; */
+
+
+
+        // Container child hpaned1.Gtk.Paned+PanedChild
+        this.GtkScrolledWindow1 = new global::Gtk.ScrolledWindow();
+        this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
+        this.GtkScrolledWindow1.ShadowType = ((global::Gtk.ShadowType)(1));
+        // Container child GtkScrolledWindow1.Gtk.Container+ContainerChild
+        this._metaDataView = new global::Gtk.TextView();
+        this._metaDataView.CanFocus = true;
+        this._metaDataView.Name = "_metaDataView";
+        this._metaDataView.Editable = false;
+        this._metaDataView.WrapMode = ((global::Gtk.WrapMode)(2));
+        this._metaDataView.LeftMargin = 5;
+        this._metaDataView.RightMargin = 5;
+        this.GtkScrolledWindow1.Add(this._metaDataView);
+
+        // Container child vbox1.Gtk.Box+BoxChild
+        var hpaned1 = new global::Gtk.HPaned();
+        hpaned1.CanFocus = true;
+        hpaned1.Position = 157;
+        hpaned1.Add(this.GtkScrolledWindow1);
+        global::Gtk.Paned.PanedChild w4 = ((global::Gtk.Paned.PanedChild)(hpaned1[this.GtkScrolledWindow1]));
+        w4.Resize = false;
+
+        // Container child hpaned1.Gtk.Paned+PanedChild
+        this._rightPane = new global::Gtk.VPaned();
+        this._rightPane.CanFocus = true;
+        this._rightPane.Name = "_rightPane";
+        this._rightPane.Position = 133;
+        // Container child _rightPane.Gtk.Paned+PanedChild
+        this.GtkScrolledWindow = new global::Gtk.ScrolledWindow();
+        this.GtkScrolledWindow.Name = "GtkScrolledWindow";
+        this.GtkScrolledWindow.ShadowType = ((global::Gtk.ShadowType)(1));
+        // Container child GtkScrolledWindow.Gtk.Container+ContainerChild
+        this.treeview1 = new global::Gtk.TreeView();
+        this.treeview1.CanFocus = true;
+        this.treeview1.Name = "treeview1";
+        this.GtkScrolledWindow.Add(this.treeview1);
+        this._rightPane.Add(this.GtkScrolledWindow);
+        global::Gtk.Paned.PanedChild w6 = ((global::Gtk.Paned.PanedChild)(this._rightPane[this.GtkScrolledWindow]));
+        w6.Resize = false;
+        hpaned1.Add(this._rightPane);
+
+        var vbox1 = new VBox();
+        vbox1.PackStart(menuBar, expand: false, fill: false, padding: 0);
+        vbox1.PackEnd(hpaned1);
+
+        this.Add(vbox1);
+        vbox1.ShowAll();
+
+        this.DefaultWidth = 575;
+        this.DefaultHeight = 530;
+        this.Show();
+        this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.OnDeleteEvent);
+    }
+	
     private void DragDropSetup()
     {
         var targetEntries = new TargetEntry[]
@@ -240,8 +345,7 @@ public partial class MainWindow: Gtk.Window
     void HandleFileSelected(object sender, FileSelectedEventArgs e)
     {
         _fileInfoView.Buffer.Clear();
-        _fileContentEditor.Text = "";
-
+        _fileContentEditor.Clear();
         if (e.FilePath == null)
         {
             return;
@@ -254,18 +358,12 @@ public partial class MainWindow: Gtk.Window
         }
         else
         {
-            using (TextReader r = new StreamReader(packageFile.GetStream()))
-            {
-                var fileContent = r.ReadToEnd();
-                _fileContentEditor.SetFileType(System.IO.Path.GetExtension(e.FilePath));
-                _fileContentEditor.Text = fileContent;
-            }
-
-            if (_fileDetail.Child != _fileContentEditor)
-            {
-                _fileDetail.Remove(_fileInfoView);
-                _fileDetail.Add(_fileContentEditor);
-            }
+            _fileContentEditor.OpenFile(packageFile);
+			if (_rightPane.Child2 != _fileContentEditor.Widget)
+			{
+				_rightPane.Remove(_rightPane.Child2);
+				_rightPane.Add2(_fileContentEditor.Widget);
+			}
         }
     }
 
@@ -288,10 +386,10 @@ public partial class MainWindow: Gtk.Window
             b.Clear();
             b.Add(s);
 
-            if (_fileDetail.Child != _fileInfoView)
+            if (_rightPane.Child2 != _fileDetail) 
             {
-                _fileDetail.Remove(_fileContentEditor);
-                _fileDetail.Add(_fileInfoView);
+				_rightPane.Remove(_rightPane.Child2);
+                _rightPane.Add2(_fileDetail);
             }
         }
         finally
