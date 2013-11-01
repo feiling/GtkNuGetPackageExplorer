@@ -13,7 +13,7 @@ public partial class MainWindow: Gtk.Window
 {	
     IPackage _package;
     PackageMetadataView _metadataView;
-    TreeViewManager _treeViewManager;
+    PackageFileListView _treeViewManager;
     FileContentEditor _fileContentEditor;
 
 	public MainWindow (): base (Gtk.WindowType.Toplevel)
@@ -43,7 +43,7 @@ public partial class MainWindow: Gtk.Window
         hpaned.Add1(_metadataView.Widget);
         
         // tree view manager
-        _treeViewManager = new TreeViewManager();
+        _treeViewManager = new PackageFileListView();
         _treeViewManager.FileSelected += HandleFileSelected;
 
         // file content

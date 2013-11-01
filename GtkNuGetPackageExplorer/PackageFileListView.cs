@@ -5,7 +5,7 @@ using NuGet;
 namespace GtkNuGetPackageExplorer
 {
     // The class used to manage the tree view that displays the files in a package
-    public class TreeViewManager
+    public class PackageFileListView
     {
         public IPackage Package
         { 
@@ -26,7 +26,7 @@ namespace GtkNuGetPackageExplorer
 
         public event EventHandler<FileSelectedEventArgs> FileSelected;
 
-        public TreeViewManager()
+        public PackageFileListView()
         {
             _treeView = new TreeView();
             _treeView.CanFocus = true;
@@ -59,6 +59,7 @@ namespace GtkNuGetPackageExplorer
             }
 
             _treeView.Model = store;
+            _treeView.ExpandAll();
         }        
 
         private void AddTreeNode(TreeStore store, TreeIter parent, GtkNuGetPackageExplorer.TreeNode n)

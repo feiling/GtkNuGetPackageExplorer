@@ -82,8 +82,11 @@ namespace GtkNuGetPackageExplorer
             _fileInfoView = new TextView()
             {
                 Editable = false,
-                WrapMode = WrapMode.Word                
+                WrapMode = WrapMode.Word,
+                LeftMargin = 5,
+                RightMargin = 5                
             };
+
             _fileInfoContainer = new ScrolledWindow()
             {
                 ShadowType = Gtk.ShadowType.EtchedIn

@@ -70,7 +70,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TextBufferExtension.cs" />
     <Compile Include="DirectoryTreeBuilder.cs" />
-    <Compile Include="TreeViewManager.cs" />
+    <Compile Include="PackageFileListView.cs" />
     <Compile Include="FileContentEditor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
