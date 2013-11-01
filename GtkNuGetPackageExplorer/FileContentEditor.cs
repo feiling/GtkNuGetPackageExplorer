@@ -1,16 +1,25 @@
 using System;
-using Mono.TextEditor;
-using Gtk;
 using System.Collections.Generic;
-using NuGet;
 using System.IO;
+using System.Reflection;
 using System.Text;
+using Gtk;
+using Mono.TextEditor;
+using NuGet;
 
 namespace GtkNuGetPackageExplorer
 {
+    enum FileContentEditorMode
+    {
+        FileInfo,
+        TextEditor
+    }
+
     public class FileContentEditor
     {
-        private VBox _vbox;
+        private VBox _widget;
+
+        private VBox _editorContainer;
         private ComboBox _fileTypeCombobox;
         private TextEditor _textEditor;
         private Label _encodingInfo;
@@ -29,17 +38,26 @@ namespace GtkNuGetPackageExplorer
         private const string mimeTypeJavaScript = "text/javascript";
         private const string mimeTypeHtml = "text/html";
 
+        // there are two modes:
+        // text editor mode, or file info mode
+        private FileContentEditorMode _mode;
+
+        private TextView _fileInfoView;
+        private ScrolledWindow _fileInfoContainer;
+
         public Widget Widget
         {
             get
             {
-                return _vbox;
+                return _widget;
             }
         }
 
         protected virtual void Build()
         {
             _fileTypeCombobox = ComboBox.NewText();
+            _fileTypeCombobox.Changed += OnFileTypeComboboxChanged;
+
             _encodingInfo = new Label();
             var hbox = new HBox();
             hbox.Spacing = 5;
@@ -47,16 +65,35 @@ namespace GtkNuGetPackageExplorer
             hbox.PackStart(_encodingInfo, expand: false, fill: false, padding: 0);
 
             _textEditor = new TextEditor();
+            _textEditor.Document.ReadOnly = true;
+            _textEditor.Options.EnableSyntaxHighlighting = true;
+            _textEditor.Document.MimeType = "";
             _textEditor.Options.ShowLineNumberMargin = true;
 
             var scrolledWindow = new ScrolledWindow();
             scrolledWindow.ShadowType = ShadowType.EtchedIn;
             scrolledWindow.Add(_textEditor);
 
-            _vbox = new VBox();
-            _vbox.PackStart(hbox, expand: false, fill: false, padding: 0);
-            _vbox.PackEnd(scrolledWindow);
-            _vbox.ShowAll();
+            _editorContainer = new VBox();
+            _editorContainer.PackStart(hbox, expand: false, fill: false, padding: 0);
+            _editorContainer.PackEnd(scrolledWindow);
+
+            _fileInfoView = new TextView()
+            {
+                Visible = true,
+                Editable = false,
+                WrapMode = WrapMode.Word                
+            };
+            _fileInfoContainer = new ScrolledWindow()
+            {
+                Visible = true,
+                ShadowType = Gtk.ShadowType.EtchedIn
+            };
+            _fileInfoContainer.Add(_fileInfoView);
+
+            _widget = new VBox();
+            _widget.Add(_fileInfoContainer);
+            _mode = FileContentEditorMode.FileInfo;            
         }
 
         public FileContentEditor()
@@ -67,12 +104,7 @@ namespace GtkNuGetPackageExplorer
             foreach (var t in _fileTypes.Keys)
             {
                 _fileTypeCombobox.AppendText(t);
-            }
-
-            _fileTypeCombobox.Changed += OnFileTypeComboboxChanged;
-            _textEditor.Document.ReadOnly = true;
-            _textEditor.Options.EnableSyntaxHighlighting = true;
-            _textEditor.Document.MimeType = "";
+            }            
         }
 
         private void InitFileTypes()
@@ -93,7 +125,7 @@ namespace GtkNuGetPackageExplorer
             _fileExtensionToType.Add(".htm", "Html");
 
             _knownBinaryFileExtension = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-            _knownBinaryFileExtension.Add(".exe");
+            _knownBinaryFileExtension.AddRange(new[] { ".exe", ".pdb" });
         }
 
         protected void OnFileTypeComboboxChanged(object sender, EventArgs e)
@@ -148,10 +180,15 @@ namespace GtkNuGetPackageExplorer
         public void OpenFile(IPackageFile packageFile)
         {
             var extension = Path.GetExtension(packageFile.Path);
-            if (_knownBinaryFileExtension.Contains(extension))
+            if (String.Equals(extension, ".dll", StringComparison.OrdinalIgnoreCase))
             {
-                _textEditor.Text = "Binary file";
-                _encodingInfo.Text = "";
+                ShowDllFileInfo(packageFile);
+                SetMode(FileContentEditorMode.FileInfo);
+            }
+            else if (_knownBinaryFileExtension.Contains(extension))
+            {
+                _fileInfoView.Buffer.Text = "This is a binary file";
+                SetMode(FileContentEditorMode.FileInfo);
             }
             else
             {
@@ -162,6 +199,27 @@ namespace GtkNuGetPackageExplorer
                     SetFileType(extension);
                     _textEditor.Text = fileContent;
                 }
+            }
+        }
+
+        private void SetMode(FileContentEditorMode mode)
+        {
+            if (_mode == mode)
+            {
+                return;
+            }
+
+            _mode = mode;
+            if (_mode == FileContentEditorMode.FileInfo)
+            {
+                _widget.Remove(_editorContainer);
+                _widget.Add(_fileInfoContainer);
+            }
+            else
+            {
+                // Editor info mode
+                _widget.Remove(_fileInfoContainer);
+                _widget.Add(_editorContainer);
             }
         }
 
@@ -218,6 +276,44 @@ namespace GtkNuGetPackageExplorer
         {
             _textEditor.Text = "";
             _encodingInfo.Text = "";
+            _fileInfoView.Buffer.Clear();
+        }
+
+        void ShowDllFileInfo(IPackageFile packageFile)
+        {
+            byte[] rawAssembly;
+            using (var stream = packageFile.GetStream())
+            {
+                rawAssembly = stream.ReadAllBytes();
+            }
+
+            AppDomain temp = AppDomain.CreateDomain("temp_for_loading_metadata");
+            try
+            {
+                AssemblyLoader al = (AssemblyLoader)temp.CreateInstanceAndUnwrap(
+                    typeof(AssemblyLoader).Assembly.FullName,
+                    typeof(AssemblyLoader).FullName);
+                var s = al.GetMetadata(rawAssembly);
+                var b = _fileInfoView.Buffer;
+                b.Clear();
+                b.Add(s);
+            }
+            finally
+            {
+                AppDomain.Unload(temp);
+            }
+        }
+
+        public class AssemblyLoader : MarshalByRefObject
+        {
+            public string GetMetadata(byte[] rawAssembly)
+            {
+                var assembly = Assembly.ReflectionOnlyLoad(rawAssembly);
+                var sb = new StringBuilder();
+                sb.AppendFormat("Full Name: {0}\n", assembly.FullName);
+
+                return sb.ToString();
+            }
         }
     }
 }

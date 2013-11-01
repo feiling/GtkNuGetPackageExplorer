@@ -1,6 +1,6 @@
 using System;
-using NuGet;
 using Gtk;
+using NuGet;
 
 namespace GtkNuGetPackageExplorer
 {
@@ -20,19 +20,31 @@ namespace GtkNuGetPackageExplorer
             }
         }
 
+        private ScrolledWindow _scrolledWindow;
         private TreeView _treeView;
         private IPackage _package;
 
         public event EventHandler<FileSelectedEventArgs> FileSelected;
 
-        public TreeViewManager(TreeView treeView)
+        public TreeViewManager()
         {
-            _treeView = treeView;
-
-            // init tree view
+            _treeView = new TreeView();
+            _treeView.CanFocus = true;
             _treeView.HeadersVisible = false;
             _treeView.AppendColumn("", new CellRendererText(), "text", 0);
             _treeView.CursorChanged += HandleCursorChanged;
+
+            _scrolledWindow = new ScrolledWindow();
+            _scrolledWindow.ShadowType = ShadowType.EtchedIn;
+            _scrolledWindow.Add(_treeView);
+        }
+
+        public Widget Widget
+        {
+            get
+            {
+                return _scrolledWindow;
+            }
         }
 
         private void Refresh()
