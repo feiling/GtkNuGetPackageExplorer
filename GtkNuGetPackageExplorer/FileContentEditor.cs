@@ -77,19 +77,19 @@ namespace GtkNuGetPackageExplorer
             _editorContainer = new VBox();
             _editorContainer.PackStart(hbox, expand: false, fill: false, padding: 0);
             _editorContainer.PackEnd(scrolledWindow);
+            _editorContainer.ShowAll();
 
             _fileInfoView = new TextView()
             {
-                Visible = true,
                 Editable = false,
                 WrapMode = WrapMode.Word                
             };
             _fileInfoContainer = new ScrolledWindow()
             {
-                Visible = true,
                 ShadowType = Gtk.ShadowType.EtchedIn
             };
             _fileInfoContainer.Add(_fileInfoView);
+            _fileInfoContainer.ShowAll();
 
             _widget = new VBox();
             _widget.Add(_fileInfoContainer);
@@ -192,6 +192,7 @@ namespace GtkNuGetPackageExplorer
             }
             else
             {
+                SetMode(FileContentEditorMode.TextEditor);
                 GetEncodingInfo(packageFile.GetStream());
                 using (TextReader r = new StreamReader(packageFile.GetStream()))
                 {
