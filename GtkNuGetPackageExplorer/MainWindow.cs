@@ -15,6 +15,7 @@ public partial class MainWindow: Gtk.Window
     PackageMetadataView _metadataView;
     PackageFileListView _treeViewManager;
     FileContentEditor _fileContentEditor;
+    OpenFileFromFeedDialog _openFileFromFeedDialog;
 
 	public MainWindow (): base (Gtk.WindowType.Toplevel)
 	{
@@ -28,8 +29,12 @@ public partial class MainWindow: Gtk.Window
         var openMenuItem = new MenuItem("Open");
         openMenuItem.Activated += (o, e) => OpenFile();
 
+        var openFromFeedMenuItem = new MenuItem("Open from feed ...");
+        openFromFeedMenuItem.Activated += (o, e) => OpenFileFromFeed();
+
         var fileMenu = new Menu();
         fileMenu.Append(openMenuItem);
+        fileMenu.Append(openFromFeedMenuItem);
 
         var fileMenuItem = new MenuItem("File");
         fileMenuItem.Submenu = fileMenu;
@@ -67,6 +72,8 @@ public partial class MainWindow: Gtk.Window
         this.DefaultHeight = 530;
         this.Show();
         this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.OnDeleteEvent);
+
+        _openFileFromFeedDialog = new OpenFileFromFeedDialog();
     }
 	
     private void DragDropSetup()
@@ -133,6 +140,12 @@ public partial class MainWindow: Gtk.Window
             m.Run();
             m.Destroy();
         }
+    }
+
+    private void OpenFileFromFeed()
+    {
+        _openFileFromFeedDialog.Run();
+        _openFileFromFeedDialog.Hide();
     }
 
 	private void OpenFile()
