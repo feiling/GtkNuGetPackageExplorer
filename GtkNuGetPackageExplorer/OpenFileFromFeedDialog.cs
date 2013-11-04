@@ -62,14 +62,10 @@ namespace GtkNuGetPackageExplorer
 
             this.VBox.PackStart(hbox, expand: false, fill: false, padding: 5);
 
-            hbox = new HBox();
-            button = new Button("Open");
-            button.Clicked += (obj, e) => OpenPackage();
-            hbox.PackStart(button, expand: false, fill: false, padding: 5);
-            this.VBox.PackStart(hbox, expand: false, fill: false, padding: 5);
-
             _packageList = new TreeView();
             _packageList.Selection.Mode = SelectionMode.Single;
+            _packageList.RowActivated += (obj, e) => OpenPackage();
+
             var column = new TreeViewColumn("Id", new CellRendererText(), "text", 1)
             {
                 Resizable = true

@@ -9,7 +9,7 @@ using NuGet;
 
 namespace GtkNuGetPackageExplorer
 {
-    enum FileContentEditorMode
+    public enum FileContentEditorMode
     {
         FileInfo,
         TextEditor
@@ -203,7 +203,7 @@ namespace GtkNuGetPackageExplorer
             }
         }
 
-        private void SetMode(FileContentEditorMode mode)
+        public void SetMode(FileContentEditorMode mode)
         {
             if (_mode == mode)
             {

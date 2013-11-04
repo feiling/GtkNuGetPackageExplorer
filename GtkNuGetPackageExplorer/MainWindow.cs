@@ -231,6 +231,7 @@ public class MainWindow: Gtk.Window
         _metadataView.Update(_package);
         _treeViewManager.Package = _package;
         _fileContentEditor.Clear();
+        _fileContentEditor.SetMode(FileContentEditorMode.FileInfo);
     }
 
     public void OpenPackageFile(string fileName)
