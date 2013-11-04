@@ -34,7 +34,7 @@ namespace GtkNuGetPackageExplorer
             var editorFontButton = new FontButton(_userSettings.TextEditorFont.ToString());            
             editorFontButton.FontSet += (obj, e) =>
             {
-                _userSettings.TextEditorFont = Pango.FontDescription.FromString(editorFontButton.FontName);
+                _userSettings.TextEditorFont = editorFontButton.FontName;
             };
             hbox.PackStart(editorFontButton, expand: true, fill: true, padding: 5);
             this.VBox.PackStart(hbox, expand: false, fill: false, padding: 5);

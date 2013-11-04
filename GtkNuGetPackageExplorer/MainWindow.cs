@@ -40,12 +40,12 @@ public class MainWindow: Gtk.Window
         }
         if (_userSettings.TextEditorFont == null)
         {
-            _userSettings.TextEditorFont = _fileContentEditor.TextEditorFont;
-            if (_userSettings.TextEditorFont.Family == "Mono" &&
-                Environment.OSVersion.Platform == PlatformID.Win32NT)
+            var f = _fileContentEditor.TextEditorFont.Copy();            
+            if (f.Family == "Mono")
             {
-                _userSettings.TextEditorFont.Family = "Consolas";
+                f.Family = "Monospace";
             }
+            _userSettings.TextEditorFont = f.ToString();
         }
 
         ApplySettings();
@@ -135,7 +135,7 @@ public class MainWindow: Gtk.Window
         _metadataView.Font = _userSettings.UIFont;
         _treeViewManager.Font = _userSettings.UIFont;
         _fileContentEditor.Font = _userSettings.UIFont;
-        _fileContentEditor.TextEditorFont = _userSettings.TextEditorFont;
+        _fileContentEditor.TextEditorFont = Pango.FontDescription.FromString(_userSettings.TextEditorFont);
     }
 
     private void SaveAs()

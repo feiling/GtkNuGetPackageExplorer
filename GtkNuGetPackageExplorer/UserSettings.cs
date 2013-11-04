@@ -8,7 +8,7 @@ namespace GtkNuGetPackageExplorer
 {
     struct UserSettings
     {
-        public FontDescription TextEditorFont
+        public string TextEditorFont
         {
             get;
             set;
@@ -36,7 +36,7 @@ namespace GtkNuGetPackageExplorer
                 v = GetValue(doc, "TextEditorFont");
                 if (!String.IsNullOrWhiteSpace(v))
                 {
-                    TextEditorFont = Pango.FontDescription.FromString(v);
+                    TextEditorFont = v;
                 }
             }
             catch
