@@ -11,6 +11,7 @@ namespace GtkNuGetPackageExplorer
     class OpenFileFromFeedDialog : Dialog
     {
         private Entry _packageSource;
+        private Entry _searchText;
         private TreeView _packageList;
         private Label _info;
         private ListStore _store;
@@ -19,6 +20,7 @@ namespace GtkNuGetPackageExplorer
         private const int _pageSize = 15;
         private int _startCount;
         private int _totalCount;
+        private IPackage _package;
 
         public OpenFileFromFeedDialog()
             : base("Open from feed", null, DialogFlags.Modal)
@@ -30,14 +32,10 @@ namespace GtkNuGetPackageExplorer
 
             _packageSource = new Entry()
             {
-                Text = "https://nuget.org/api/v2/"
+                Text = "http://nuget.org/api/v2/"
             };
             hbox.PackStart(_packageSource, expand: true, fill: true, padding: 5);
             
-            var reloadButton = new Button("Reload");
-            reloadButton.Clicked += (obj, e) => Reload();
-
-            hbox.PackStart(reloadButton, expand: false, fill: false, padding: 5);
             this.VBox.PackStart(hbox, expand: false, fill: false, padding: 5);
 
             hbox = new HBox();
@@ -45,38 +43,57 @@ namespace GtkNuGetPackageExplorer
             button.Clicked += (obj, e) => PrevPage();
             hbox.PackStart(button, expand: false, fill: false, padding: 5);
 
-            _info = new Label();
-            hbox.PackStart(_info, expand: false, fill: false, padding: 5);            
+            _info = new Label()
+            {
+                Text = "0 to 0 of 0"
+            };
+            hbox.PackStart(_info, expand: false, fill: false, padding: 5);
 
             button = new Button("Next");
             button.Clicked += (obj, e) => NextPage();
             hbox.PackStart(button, expand: false, fill: false, padding: 5);
+
+            _searchText = new Entry();
+            hbox.PackStart(_searchText, expand: true, fill: true, padding: 5);
+
+            var searchButton = new Button("Search");
+            searchButton.Clicked += (obj, e) => Search();
+            hbox.PackStart(searchButton, expand: false, fill: false, padding: 5);
+
             this.VBox.PackStart(hbox, expand: false, fill: false, padding: 5);
-            
+
+            hbox = new HBox();
+            button = new Button("Open");
+            button.Clicked += (obj, e) => OpenPackage();
+            hbox.PackStart(button, expand: false, fill: false, padding: 5);
+            this.VBox.PackStart(hbox, expand: false, fill: false, padding: 5);
+
             _packageList = new TreeView();
-            var column = new TreeViewColumn("Id", new CellRendererText(), "text", 0)
+            _packageList.Selection.Mode = SelectionMode.Single;
+            var column = new TreeViewColumn("Id", new CellRendererText(), "text", 1)
             {
                 Resizable = true
             };
             _packageList.AppendColumn(column);
 
-            column = new TreeViewColumn("Version", new CellRendererText(), "text", 1)
+            column = new TreeViewColumn("Version", new CellRendererText(), "text", 2)
             {
                 Resizable = true
             };
             _packageList.AppendColumn(column);
-            column = new TreeViewColumn("Authors", new CellRendererText(), "text", 2)
+            column = new TreeViewColumn("Authors", new CellRendererText(), "text", 3)
             {
                 Resizable = true
             };
             _packageList.AppendColumn(column);
-            column = new TreeViewColumn("Downloads", new CellRendererText(), "text", 3)
+            column = new TreeViewColumn("Downloads", new CellRendererText(), "text", 4)
             {
                 Resizable = true
             };
             _packageList.AppendColumn(column);
 
             _store = new ListStore(
+                typeof(IPackage),
                 typeof(string),
                 typeof(string), 
                 typeof(string), 
@@ -92,6 +109,28 @@ namespace GtkNuGetPackageExplorer
 
             this.AddButton("Close", ResponseType.Close);
             this.VBox.ShowAll();
+            this.DefaultWidth = 500;
+            this.DefaultHeight = 500;
+        }
+
+        public IPackage Package
+        {
+            get
+            {
+                return _package;
+            }
+        }
+
+        private void OpenPackage()
+        {
+            TreeIter iter;
+            if (!_packageList.Selection.GetSelected(out iter))
+            {
+                return;
+            }
+
+            _package = _packageList.Model.GetValue(iter, 0) as IPackage;
+            Respond(ResponseType.Ok);
         }
 
         private void NextPage()
@@ -126,6 +165,7 @@ namespace GtkNuGetPackageExplorer
             foreach (var p in _packages.Skip(_startCount).Take(_pageSize))
             {
                 _store.AppendValues(
+                    p,
                     p.Id,
                     p.Version.ToString(),
                     String.Join(", ", p.Authors),
@@ -133,7 +173,7 @@ namespace GtkNuGetPackageExplorer
             }
         }
 
-        private void Reload()
+        private void Search()
         {
             var source = _packageSource.Text;
             Uri sourceUri;
@@ -151,7 +191,20 @@ namespace GtkNuGetPackageExplorer
             }
 
             var packageRepo = new DataServicePackageRepository(sourceUri);
-            _packages = packageRepo.GetPackages().Where(p => p.IsAbsoluteLatestVersion == true).OrderByDescending(p => p.DownloadCount);
+            if (string.IsNullOrWhiteSpace(_searchText.Text))
+            {
+                _packages = packageRepo.GetPackages()
+                    .Where(p => p.IsAbsoluteLatestVersion == true)
+                    .OrderByDescending(p => p.DownloadCount);
+            }
+            else
+            {
+                _packages = packageRepo
+                    .Search(_searchText.Text, allowPrereleaseVersions: false)
+                    .Where(p => p.IsAbsoluteLatestVersion == true)
+                    .OrderByDescending(p => p.DownloadCount);
+            }
+            
             _startCount = 0;
             _totalCount = _packages.Count();
             GetPackages();

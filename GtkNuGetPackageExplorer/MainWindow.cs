@@ -116,14 +116,20 @@ public partial class MainWindow: Gtk.Window
 		a.RetVal = true;
 	}
 
+    private void OpenPackage(IPackage package)
+    {
+        _package = package;
+        _metadataView.Update(_package);
+        _treeViewManager.Package = _package;
+        _fileContentEditor.Clear();
+    }
+
     public void OpenPackageFile(string fileName)
     {
         try
         {
             _package = new OptimizedZipPackage(fileName);
-            _metadataView.Update(_package);
-            _treeViewManager.Package = _package;
-            _fileContentEditor.Clear();
+            OpenPackage(_package);
         }
         catch (Exception ex)
         {
@@ -144,8 +150,12 @@ public partial class MainWindow: Gtk.Window
 
     private void OpenFileFromFeed()
     {
-        _openFileFromFeedDialog.Run();
+        int r = _openFileFromFeedDialog.Run();
         _openFileFromFeedDialog.Hide();
+        if (r == (int)ResponseType.Ok)
+        {
+            OpenPackage(_openFileFromFeedDialog.Package);
+        }        
     }
 
 	private void OpenFile()
