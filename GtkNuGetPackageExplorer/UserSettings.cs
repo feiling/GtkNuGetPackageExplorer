@@ -44,7 +44,7 @@ namespace GtkNuGetPackageExplorer
             }
         }
 
-        private string GetValue(XDocument doc, string key)
+        public static string GetValue(XDocument doc, string key)
         {
             var d = doc.Root.Descendants().Where(
                 e =>

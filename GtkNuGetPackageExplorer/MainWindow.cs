@@ -20,13 +20,23 @@ public class MainWindow: Gtk.Window
     FileChooserDialog _saveAsDialog;
     MenuItem _saveAsMenuItem;
     UserSettings _userSettings;
+    UserPrefs _userPrefs;
+    HPaned _hpaned;
+    VPaned _rightPane;
 
     public MainWindow()
         : base(Gtk.WindowType.Toplevel)
     {
+        LoadUserPrefs();
         Build();
-        DragDropSetup();
+        DragDropSetup();        
         LoadUserSettings();
+    }
+
+    void LoadUserPrefs()
+    {
+        _userPrefs = new UserPrefs();
+        _userPrefs.Load();
     }
 
     void LoadUserSettings()
@@ -80,9 +90,9 @@ public class MainWindow: Gtk.Window
         menuBar.Append(fileMenuItem);
         
         _metadataView = new PackageMetadataView();
-        var hpaned = new HPaned();
-        hpaned.Position = 157;
-        hpaned.Add1(_metadataView.Widget);
+        _hpaned = new HPaned();
+        _hpaned.Position = _userPrefs.HPanedPosition;
+        _hpaned.Add1(_metadataView.Widget);
         
         // tree view manager
         _treeViewManager = new PackageFileListView();
@@ -91,26 +101,26 @@ public class MainWindow: Gtk.Window
         // file content
         _fileContentEditor = new FileContentEditor();
 
-        var rightPane = new VPaned();
-        rightPane.Position = 133;
-        rightPane.Add1(_treeViewManager.Widget);
-        rightPane.Add2(_fileContentEditor.Widget);
+        _rightPane = new VPaned();
+        _rightPane.Position = _userPrefs.VPanedPosition;
+        _rightPane.Add1(_treeViewManager.Widget);
+        _rightPane.Add2(_fileContentEditor.Widget);
         
-        hpaned.Add2(rightPane);
+        _hpaned.Add2(_rightPane);
 
         var vbox = new VBox();
         vbox.PackStart(menuBar, expand: false, fill: false, padding: 0);
-        vbox.PackEnd(hpaned);
+        vbox.PackEnd(_hpaned);
 
         this.Add(vbox);
         vbox.ShowAll();
 
-        this.DefaultWidth = 575;
-        this.DefaultHeight = 530;
+        this.DefaultWidth = _userPrefs.WindowWidth;
+        this.DefaultHeight = _userPrefs.WindowHeight;
         this.Show();
         this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.OnDeleteEvent);
 
-        _openFileFromFeedDialog = new OpenFileFromFeedDialog();
+        _openFileFromFeedDialog = new OpenFileFromFeedDialog(this);
     }
 
     void SettingsMenuItem_Activated(object sender, EventArgs e)
@@ -209,6 +219,7 @@ public class MainWindow: Gtk.Window
 
 	protected void OnDeleteEvent(object sender, DeleteEventArgs a)
 	{
+        SaveUserPrefs();
 		Application.Quit();
 		a.RetVal = true;
 	}
@@ -314,5 +325,17 @@ public class MainWindow: Gtk.Window
 
         var packageFile = _package.GetFiles().FirstOrDefault(f => f.Path == e.FilePath);
         _fileContentEditor.OpenFile(packageFile);
+    }
+
+    void SaveUserPrefs()
+    {
+        int h, w;
+        this.GetSize(out w, out h);
+        _userPrefs.WindowHeight = h;
+        _userPrefs.WindowWidth = w;
+        _userPrefs.HPanedPosition = _hpaned.Position;
+        _userPrefs.VPanedPosition = _rightPane.Position;
+
+        _userPrefs.Save();
     }
 }

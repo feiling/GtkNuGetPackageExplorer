@@ -76,6 +76,7 @@
     <Compile Include="DirectoryTreeBuilder.cs" />
     <Compile Include="PackageFileListView.cs" />
     <Compile Include="FileContentEditor.cs" />
+    <Compile Include="UserPrefs.cs" />
     <Compile Include="UserSettings.cs" />
     <Compile Include="UserSettingsDialog.cs" />
     <Compile Include="WaitDialog.cs" />

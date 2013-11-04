@@ -22,8 +22,8 @@ namespace GtkNuGetPackageExplorer
         private int _totalCount;
         private IPackage _package;
 
-        public OpenFileFromFeedDialog()
-            : base("Open from feed", null, DialogFlags.Modal)
+        public OpenFileFromFeedDialog(Window parent)
+            : base("Open from feed", parent, DialogFlags.Modal)
         {
             var hbox = new HBox();
             hbox.PackStart(
