@@ -181,7 +181,7 @@ namespace GtkNuGetPackageExplorer
             {
                 var m = new MessageDialog(
                     this,
-                    DialogFlags.Modal,
+                    DialogFlags.DestroyWithParent,
                     MessageType.Error,
                     ButtonsType.Ok,
                     "The package source provided is not a valid uri");

@@ -16,6 +16,7 @@ public partial class MainWindow: Gtk.Window
     PackageFileListView _treeViewManager;
     FileContentEditor _fileContentEditor;
     OpenFileFromFeedDialog _openFileFromFeedDialog;
+    FileChooserDialog _saveAsDialog;
 
 	public MainWindow (): base (Gtk.WindowType.Toplevel)
 	{
@@ -32,9 +33,13 @@ public partial class MainWindow: Gtk.Window
         var openFromFeedMenuItem = new MenuItem("Open from feed ...");
         openFromFeedMenuItem.Activated += (o, e) => OpenFileFromFeed();
 
+        var saveAsMenuItem = new MenuItem("Save as ...");
+        saveAsMenuItem.Activated += (o, e) => SaveAs();
+
         var fileMenu = new Menu();
         fileMenu.Append(openMenuItem);
         fileMenu.Append(openFromFeedMenuItem);
+        fileMenu.Append(saveAsMenuItem);
 
         var fileMenuItem = new MenuItem("File");
         fileMenuItem.Submenu = fileMenu;
@@ -74,6 +79,41 @@ public partial class MainWindow: Gtk.Window
         this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.OnDeleteEvent);
 
         _openFileFromFeedDialog = new OpenFileFromFeedDialog();
+    }
+
+    private void SaveAs()
+    {
+        if (_package == null)
+        {
+            return;
+        }
+
+        if (_saveAsDialog == null)
+        {
+            _saveAsDialog = new FileChooserDialog(
+                "Save as",
+                this,
+                FileChooserAction.Save,
+                Stock.Cancel, ResponseType.Cancel,
+                Stock.Ok, ResponseType.Ok);
+        }
+        _saveAsDialog.CurrentName = string.Format("{0}.{1}.nupkg", _package.Id, _package.Version);
+        _saveAsDialog.DoOverwriteConfirmation = true;
+        var r = _saveAsDialog.Run();
+        _saveAsDialog.Hide();
+        if (r != (int)ResponseType.Ok)
+        {
+            return;
+        }
+
+        var fileName = _saveAsDialog.Filename;
+        using (var f = new FileStream(fileName, FileMode.Create))
+        {
+            using (var inputStream = _package.GetStream())
+            {
+                inputStream.CopyTo(f);
+            }
+        }
     }
 	
     private void DragDropSetup()
