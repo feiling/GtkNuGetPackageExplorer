@@ -74,6 +74,7 @@
     <Compile Include="DirectoryTreeBuilder.cs" />
     <Compile Include="PackageFileListView.cs" />
     <Compile Include="FileContentEditor.cs" />
+    <Compile Include="WaitDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

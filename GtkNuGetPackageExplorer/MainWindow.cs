@@ -8,8 +8,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
-public partial class MainWindow: Gtk.Window
+public class MainWindow: Gtk.Window
 {	
     IPackage _package;
     PackageMetadataView _metadataView;
@@ -195,10 +196,38 @@ public partial class MainWindow: Gtk.Window
     {
         int r = _openFileFromFeedDialog.Run();
         _openFileFromFeedDialog.Hide();
-        if (r == (int)ResponseType.Ok)
+        if (r != (int)ResponseType.Ok)
         {
-            OpenPackage(_openFileFromFeedDialog.Package);
-        }        
+            return;
+        }
+
+        // load package in the background
+        var package = _openFileFromFeedDialog.Package;
+        var message = string.Format(
+            "loading pacakge {0} {1}",
+            package.Id, package.Version);
+        var waitDialog = new WaitDialog(message, this);
+        waitDialog.Show();
+        
+        var task = Task.Factory.StartNew(() =>
+            {
+                package.GetFiles();
+            });
+        GLib.Timeout.Add(100,
+            () =>
+            {
+                if (task.IsCompleted)
+                {
+                    // show package
+                    waitDialog.Destroy();
+                    OpenPackage(package);
+
+                    return false;
+                }
+
+                waitDialog.Pulse();
+                return true;
+            });
     }
 
 	private void OpenFile()

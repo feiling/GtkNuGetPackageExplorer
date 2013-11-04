@@ -157,19 +157,51 @@ namespace GtkNuGetPackageExplorer
 
         private void GetPackages()
         {
-            _info.Text = string.Format("{0} to {1} of {2}", 
+            var waitDialog = new WaitDialog("Loading packages...", this);
+            waitDialog.Show();
+            List<object[]> packages = new List<object[]>();
+            var task = Task.Factory.StartNew(
+                () =>
+                {
+                    _totalCount = _packages.Count();
+
+                    foreach (var p in _packages.Skip(_startCount).Take(_pageSize))
+                    {
+                        packages.Add(
+                            new object[] {
+                                p,
+                                p.Id,
+                                p.Version.ToString(),
+                                String.Join(", ", p.Authors),
+                                p.DownloadCount.ToString()
+                            });
+                    }
+                });
+            GLib.Timeout.Add(100,
+                () =>
+                {
+                    if (task.IsCompleted)
+                    {
+                        waitDialog.Destroy();
+                        UpdateView(packages);
+                        return false;
+                    }
+
+                    waitDialog.Pulse();
+                    return true;
+                });
+        }
+
+        private void UpdateView(List<object[]> packages)
+        {
+            _info.Text = string.Format("{0} to {1} of {2}",
                 _startCount + 1,
                 _startCount + _pageSize,
                 _totalCount);
             _store.Clear();
-            foreach (var p in _packages.Skip(_startCount).Take(_pageSize))
+            foreach (var p in packages)
             {
-                _store.AppendValues(
-                    p,
-                    p.Id,
-                    p.Version.ToString(),
-                    String.Join(", ", p.Authors),
-                    p.DownloadCount.ToString());
+                _store.AppendValues(p);
             }
         }
 
@@ -203,10 +235,8 @@ namespace GtkNuGetPackageExplorer
                     .Search(_searchText.Text, allowPrereleaseVersions: false)
                     .Where(p => p.IsAbsoluteLatestVersion == true)
                     .OrderByDescending(p => p.DownloadCount);
-            }
-            
+            }            
             _startCount = 0;
-            _totalCount = _packages.Count();
             GetPackages();
         }
     }
