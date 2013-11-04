@@ -64,20 +64,20 @@ public class MainWindow: Gtk.Window
         _saveAsMenuItem.Activated += (o, e) => SaveAs();
         _saveAsMenuItem.Sensitive = false;
 
+        var settingsMenuItem = new MenuItem("Settings");
+        settingsMenuItem.Activated += SettingsMenuItem_Activated;
+
         var fileMenu = new Menu();
         fileMenu.Append(openMenuItem);
         fileMenu.Append(openFromFeedMenuItem);
         fileMenu.Append(_saveAsMenuItem);
+        fileMenu.Append(settingsMenuItem);
 
         var fileMenuItem = new MenuItem("File");
         fileMenuItem.Submenu = fileMenu;
 
-        var settingsMenuItem = new MenuItem("Settings");
-        settingsMenuItem.Activated += SettingsMenuItem_Activated;
-
         var menuBar = new MenuBar();
         menuBar.Append(fileMenuItem);
-        menuBar.Append(settingsMenuItem);
         
         _metadataView = new PackageMetadataView();
         var hpaned = new HPaned();

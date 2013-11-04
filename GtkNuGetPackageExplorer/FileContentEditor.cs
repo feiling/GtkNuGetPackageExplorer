@@ -33,11 +33,6 @@ namespace GtkNuGetPackageExplorer
         // List of file extensions known to be binary
         HashSet<string> _knownBinaryFileExtension;
 
-        private const string mimeTypeCSharp = "text/x-csharp";
-        private const string mimeTypeXml = "application/xml";
-        private const string mimeTypeJavaScript = "text/javascript";
-        private const string mimeTypeHtml = "text/html";
-
         // there are two modes:
         // text editor mode, or file info mode
         private FileContentEditorMode _mode;
@@ -113,10 +108,11 @@ namespace GtkNuGetPackageExplorer
         private void InitFileTypes()
         {
             _fileTypes = new Dictionary<string, string>();
-            _fileTypes.Add("C#", mimeTypeCSharp);
-            _fileTypes.Add("XML", mimeTypeXml);
-            _fileTypes.Add("JavaScript", mimeTypeJavaScript);
-            _fileTypes.Add("Html", mimeTypeHtml);
+            _fileTypes.Add("C#", "text/x-csharp");
+            _fileTypes.Add("CSS", "text/css");
+            _fileTypes.Add("Html", "text/html");
+            _fileTypes.Add("JavaScript", "text/javascript");
+            _fileTypes.Add("XML", "application/xml");
             _fileTypes.Add("Text", "");
 
             _fileExtensionToType = new Dictionary<string, string>(
@@ -126,6 +122,7 @@ namespace GtkNuGetPackageExplorer
             _fileExtensionToType.Add(".xml", "XML");
             _fileExtensionToType.Add(".html", "Html");
             _fileExtensionToType.Add(".htm", "Html");
+            _fileExtensionToType.Add(".css", "CSS");
 
             _knownBinaryFileExtension = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
             _knownBinaryFileExtension.AddRange(new[] { ".exe", ".pdb" });
