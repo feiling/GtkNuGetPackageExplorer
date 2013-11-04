@@ -17,6 +17,7 @@ public partial class MainWindow: Gtk.Window
     FileContentEditor _fileContentEditor;
     OpenFileFromFeedDialog _openFileFromFeedDialog;
     FileChooserDialog _saveAsDialog;
+    MenuItem _saveAsMenuItem;
 
 	public MainWindow (): base (Gtk.WindowType.Toplevel)
 	{
@@ -33,13 +34,14 @@ public partial class MainWindow: Gtk.Window
         var openFromFeedMenuItem = new MenuItem("Open from feed ...");
         openFromFeedMenuItem.Activated += (o, e) => OpenFileFromFeed();
 
-        var saveAsMenuItem = new MenuItem("Save as ...");
-        saveAsMenuItem.Activated += (o, e) => SaveAs();
+        _saveAsMenuItem = new MenuItem("Save as ...");
+        _saveAsMenuItem.Activated += (o, e) => SaveAs();
+        _saveAsMenuItem.Sensitive = false;
 
         var fileMenu = new Menu();
         fileMenu.Append(openMenuItem);
         fileMenu.Append(openFromFeedMenuItem);
-        fileMenu.Append(saveAsMenuItem);
+        fileMenu.Append(_saveAsMenuItem);
 
         var fileMenuItem = new MenuItem("File");
         fileMenuItem.Submenu = fileMenu;
@@ -159,6 +161,7 @@ public partial class MainWindow: Gtk.Window
     private void OpenPackage(IPackage package)
     {
         _package = package;
+        _saveAsMenuItem.Sensitive = true;
         _metadataView.Update(_package);
         _treeViewManager.Package = _package;
         _fileContentEditor.Clear();

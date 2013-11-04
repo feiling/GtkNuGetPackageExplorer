@@ -107,7 +107,7 @@ namespace GtkNuGetPackageExplorer
             scrolledWindow.Add(_packageList);
             this.VBox.PackStart(scrolledWindow, expand: true, fill: true, padding: 5);
 
-            this.AddButton("Close", ResponseType.Close);
+            this.AddButton("Cancel", ResponseType.Cancel);
             this.VBox.ShowAll();
             this.DefaultWidth = 500;
             this.DefaultHeight = 500;
