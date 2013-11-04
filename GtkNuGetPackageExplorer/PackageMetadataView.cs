@@ -33,6 +33,18 @@ namespace GtkNuGetPackageExplorer
             textBuffer.TagTable.Add(tag);
         }
 
+        public Pango.FontDescription Font
+        {
+            get
+            {
+                return _metaDataView.Style.FontDesc;               
+            }
+            set
+            {
+                _metaDataView.ModifyFont(value);
+            }
+        }
+
         public Widget Widget
         {
             get

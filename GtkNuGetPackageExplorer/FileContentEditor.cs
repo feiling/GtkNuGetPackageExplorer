@@ -319,6 +319,30 @@ namespace GtkNuGetPackageExplorer
                 return sb.ToString();
             }
         }
+
+        public Pango.FontDescription TextEditorFont 
+        { 
+            get
+            {
+                return _textEditor.Options.Font;
+            }
+            set
+            {
+                _textEditor.Options.FontName = value.ToString();
+            }
+        }
+
+        public Pango.FontDescription Font
+        {
+            get
+            {
+                return _fileInfoView.Style.FontDesc;
+            }
+            set
+            {
+                _fileInfoView.ModifyFont(value);
+            }
+        }
     }
 }
 

@@ -39,6 +39,18 @@ namespace GtkNuGetPackageExplorer
             _scrolledWindow.Add(_treeView);
         }
 
+        public Pango.FontDescription Font
+        {
+            get
+            {
+                return _treeView.Style.FontDesc;
+            }
+            set
+            {
+                _treeView.ModifyFont(value);
+            }
+        }
+
         public Widget Widget
         {
             get

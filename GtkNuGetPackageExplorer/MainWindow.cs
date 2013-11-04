@@ -19,12 +19,37 @@ public class MainWindow: Gtk.Window
     OpenFileFromFeedDialog _openFileFromFeedDialog;
     FileChooserDialog _saveAsDialog;
     MenuItem _saveAsMenuItem;
+    UserSettings _userSettings;
 
-	public MainWindow (): base (Gtk.WindowType.Toplevel)
-	{
-        Build ();
+    public MainWindow()
+        : base(Gtk.WindowType.Toplevel)
+    {
+        Build();
         DragDropSetup();
-	}
+        LoadUserSettings();
+    }
+
+    void LoadUserSettings()
+    {
+        _userSettings = new UserSettings();
+        _userSettings.Load();
+
+        if (_userSettings.UIFont == null)
+        {
+            _userSettings.UIFont = _metadataView.Font;
+        }
+        if (_userSettings.TextEditorFont == null)
+        {
+            _userSettings.TextEditorFont = _fileContentEditor.TextEditorFont;
+            if (_userSettings.TextEditorFont.Family == "Mono" &&
+                Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                _userSettings.TextEditorFont.Family = "Consolas";
+            }
+        }
+
+        ApplySettings();
+    }
 
     protected virtual void Build()
     {
@@ -47,8 +72,12 @@ public class MainWindow: Gtk.Window
         var fileMenuItem = new MenuItem("File");
         fileMenuItem.Submenu = fileMenu;
 
+        var settingsMenuItem = new MenuItem("Settings");
+        settingsMenuItem.Activated += SettingsMenuItem_Activated;
+
         var menuBar = new MenuBar();
-        menuBar.Append(fileMenuItem);        
+        menuBar.Append(fileMenuItem);
+        menuBar.Append(settingsMenuItem);
         
         _metadataView = new PackageMetadataView();
         var hpaned = new HPaned();
@@ -82,6 +111,31 @@ public class MainWindow: Gtk.Window
         this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.OnDeleteEvent);
 
         _openFileFromFeedDialog = new OpenFileFromFeedDialog();
+    }
+
+    void SettingsMenuItem_Activated(object sender, EventArgs e)
+    {
+        var userSettingsDialog = new UserSettingsDialog(this, _userSettings);
+        int r = userSettingsDialog.Run();
+        if (r == (int)ResponseType.Ok)
+        {
+            userSettingsDialog.Destroy();
+            _userSettings = userSettingsDialog.UserSettings;
+            _userSettings.Save();
+            ApplySettings();
+        }
+        else
+        {
+            userSettingsDialog.Destroy();
+        }
+    }
+
+    private void ApplySettings()
+    {
+        _metadataView.Font = _userSettings.UIFont;
+        _treeViewManager.Font = _userSettings.UIFont;
+        _fileContentEditor.Font = _userSettings.UIFont;
+        _fileContentEditor.TextEditorFont = _userSettings.TextEditorFont;
     }
 
     private void SaveAs()

@@ -62,6 +62,8 @@
     <Reference Include="ICSharpCode.NRefactory">
       <HintPath>..\lib\ICSharpCode.NRefactory.dll</HintPath>
     </Reference>
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +76,8 @@
     <Compile Include="DirectoryTreeBuilder.cs" />
     <Compile Include="PackageFileListView.cs" />
     <Compile Include="FileContentEditor.cs" />
+    <Compile Include="UserSettings.cs" />
+    <Compile Include="UserSettingsDialog.cs" />
     <Compile Include="WaitDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
