@@ -16,7 +16,7 @@ namespace GtkNuGetPackageExplorer
             Modal = true;
             this.TransientFor = parent;
             this.WindowPosition = Gtk.WindowPosition.CenterOnParent;
-            DefaultSize = new Gdk.Size(500, 50);
+            DefaultSize = new Gdk.Size(300, 50);
             _progressBar = new ProgressBar();
             _progressBar.Text = text;
             var vbox = new VBox();
