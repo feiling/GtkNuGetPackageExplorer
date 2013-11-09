@@ -23,11 +23,27 @@ namespace GtkNuGetPackageExplorer
         private ScrolledWindow _scrolledWindow;
         private TreeView _treeView;
         private IPackage _package;
+        private VBox _vbox;
 
         public event EventHandler<FileSelectedEventArgs> FileSelected;
 
         public PackageFileListView()
         {
+            HBox hbox = new HBox();
+            Button button = new Button("Collapse All");
+            button.Clicked += (obj, e) =>
+            {
+                _treeView.CollapseAll();
+            };
+            hbox.PackStart(button, expand: false, fill: false, padding: 5);
+
+            button = new Button("Expand All");
+            button.Clicked += (obj, e) =>
+            {
+                _treeView.ExpandAll();
+            };
+            hbox.PackStart(button, expand: false, fill: false, padding: 5);
+
             _treeView = new TreeView();
             _treeView.CanFocus = true;
             _treeView.HeadersVisible = false;
@@ -37,6 +53,10 @@ namespace GtkNuGetPackageExplorer
             _scrolledWindow = new ScrolledWindow();
             _scrolledWindow.ShadowType = ShadowType.EtchedIn;
             _scrolledWindow.Add(_treeView);
+
+            _vbox = new VBox();
+            _vbox.PackStart(hbox, expand: false, fill: true, padding: 5);
+            _vbox.PackStart(_scrolledWindow, expand: true, fill: true, padding: 5);
         }
 
         public Pango.FontDescription Font
@@ -55,7 +75,7 @@ namespace GtkNuGetPackageExplorer
         {
             get
             {
-                return _scrolledWindow;
+                return _vbox;
             }
         }
 
